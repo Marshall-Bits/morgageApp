@@ -22,15 +22,19 @@
     <label for="importe">Importe de la vivienda (€):</label>
     <input type="number" id="importe" min="0" step="1000" placeholder="Ej: 200000">
     <label for="anios">Años de hipoteca:</label>
-    <input type="number" id="anios" min="5" max="40" step="1" value="30">
+    <input type="number" id="anios" min="20" max="35" step="1" value="30">
     <button onclick="calcular()">Calcular</button>
     <div class="result" id="result" style="display:none;"></div>
   </div>
   <script>
     function calcular() {
       const importe = parseFloat(document.getElementById('importe').value);
-      const anios = parseInt(document.getElementById('anios').value) || 30;
+      let anios = parseInt(document.getElementById('anios').value) || 30;
       const resultDiv = document.getElementById('result');
+      // Limitar a entre 20 y 35 años
+      if (anios < 20) anios = 20;
+      if (anios > 35) anios = 35;
+      document.getElementById('anios').value = anios;
       if (isNaN(importe) || importe <= 0 || isNaN(anios) || anios <= 0) {
         resultDiv.style.display = 'none';
         resultDiv.style.background = '#e9f7ef'; // Reset background
@@ -45,16 +49,28 @@
       const interesMensual = interesAnual / 12;
       // Fórmula de cuota fija: C = P * [i(1+i)^n] / [(1+i)^n - 1]
       const cuota = capitalHipoteca * (interesMensual * Math.pow(1 + interesMensual, nPeriodos)) / (Math.pow(1 + interesMensual, nPeriodos) - 1);
-      // Cambia el fondo del contenedor si la entrada supera 55000 o la cuota supera 840
-      if (entrada > 55000 || cuota > 840) {
+      // Cambia el fondo del contenedor si el total a aportar inicialmente supera 52000 o la cuota supera 840
+      if (totalAportar > 52000 || cuota > 840) {
         resultDiv.style.background = '#ffcccc'; // rojo claro
       } else {
         resultDiv.style.background = '#e9f7ef'; // fondo normal del contenedor
+      }
+      let prestamoInfo = '';
+      if (totalAportar > 35000) {
+        const restante = totalAportar - 35000;
+        const cuotaMensualPrestamo = restante / 120;
+        prestamoInfo = `
+          <div style="margin:1em 0; padding:0.7em; background:#fff3cd; border-radius:5px;">
+            <strong>Préstamo necesario:</strong> ${restante.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}<br>
+            <strong>Cuota del préstamo (10 años):</strong> ${cuotaMensualPrestamo.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}
+          </div>
+        `;
       }
       resultDiv.innerHTML = `
         <p><strong>Impuestos (12%):</strong> ${impuestos.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
         <p><strong>Entrada (10%):</strong> ${entrada.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
         <p><strong>Total a aportar inicialmente:</strong> ${totalAportar.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        ${prestamoInfo}
         <hr>
         <p><strong>Cuota mensual estimada:</strong> ${cuota.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
         <p style="font-size:0.9em;color:#888;">Interés: 2,250% | TAE: 2,271% | Plazo: ${nPeriodos} meses (${anios} años)</p>
