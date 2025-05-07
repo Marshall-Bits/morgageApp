@@ -11,7 +11,16 @@
     label, input { display: block; width: 100%; margin-bottom: 1em; }
     .result { background: #e9f7ef; padding: 1em; border-radius: 6px; margin-top: 1em; }
     .result p { margin: 0.5em 0; }
-    input[type="number"] { padding: 0.5em; font-size: 1em; }
+    input[type="number"] {
+      padding: 0.5em;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+      /* Para que los selectores +/- no sobresalgan el ancho */
+      min-width: 0;
+      max-width: 100%;
+      display: block;
+    }
     button { width: 100%; padding: 0.7em; background: #007bff; color: #fff; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; }
     button:hover { background: #0056b3; }
   </style>
@@ -20,16 +29,20 @@
   <div class="container">
     <h1>Calculadora de Hipoteca</h1>
     <label for="importe">Importe de la vivienda (€):</label>
-    <input type="number" id="importe" min="0" step="1000" placeholder="Ej: 200000">
+    <input type="number" id="importe" min="0" max="220000" step="1000" placeholder="Ej: 200000" value="190000" onchange="calcular()">
     <label for="anios">Años de hipoteca:</label>
-    <input type="number" id="anios" min="20" max="35" step="1" value="30">
-    <button onclick="calcular()">Calcular</button>
+    <input type="number" id="anios" min="20" max="35" step="1" value="30" onchange="calcular()">
+    <label for="comunidad">Gastos de comunidad (€):</label>
+    <input type="number" id="comunidad" min="0" step="1" value="100" onchange="calcular()">
     <div class="result" id="result" style="display:none;"></div>
   </div>
   <script>
+    window.onload = calcular;
     function calcular() {
       const importe = parseFloat(document.getElementById('importe').value);
       let anios = parseInt(document.getElementById('anios').value) || 30;
+      const comunidad = parseFloat(document.getElementById('comunidad').value) || 0;
+      const seguros = 400;
       const resultDiv = document.getElementById('result');
       // Limitar a entre 20 y 35 años
       if (anios < 20) anios = 20;
@@ -42,6 +55,7 @@
       }
       const impuestos = importe * 0.12;
       const entrada = importe * 0.10;
+      const ibi = importe * 0.006;
       const totalAportar = impuestos + entrada;
       const capitalHipoteca = importe - entrada;
       const interesAnual = 0.0225;
@@ -49,6 +63,7 @@
       const interesMensual = interesAnual / 12;
       // Fórmula de cuota fija: C = P * [i(1+i)^n] / [(1+i)^n - 1]
       const cuota = capitalHipoteca * (interesMensual * Math.pow(1 + interesMensual, nPeriodos)) / (Math.pow(1 + interesMensual, nPeriodos) - 1);
+      const cuotaTotalMensual = cuota + comunidad + (ibi/12) + (seguros/12);
       // Cambia el fondo del contenedor si el total a aportar inicialmente supera 52000 o la cuota supera 840
       if (totalAportar > 52000 || cuota > 840) {
         resultDiv.style.background = '#ffcccc'; // rojo claro
@@ -56,23 +71,33 @@
         resultDiv.style.background = '#e9f7ef'; // fondo normal del contenedor
       }
       let prestamoInfo = '';
-      if (totalAportar > 35000) {
-        const restante = totalAportar - 35000;
-        const cuotaMensualPrestamo = restante / 120;
+      if (totalAportar > 40000) {
+        const restante = totalAportar - 40000;
         prestamoInfo = `
           <div style="margin:1em 0; padding:0.7em; background:#fff3cd; border-radius:5px;">
-            <strong>Préstamo necesario:</strong> ${restante.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}<br>
-            <strong>Cuota del préstamo (10 años):</strong> ${cuotaMensualPrestamo.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}
+            <strong>Dinero extra necesario:</strong> ${restante.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}
           </div>
         `;
       }
       resultDiv.innerHTML = `
-        <p><strong>Impuestos (12%):</strong> ${impuestos.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
-        <p><strong>Entrada (10%):</strong> ${entrada.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
-        <p><strong>Total a aportar inicialmente:</strong> ${totalAportar.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
-        ${prestamoInfo}
+        <div style="margin-bottom:1em;">
+          <p><strong>Impuestos (12%):</strong> ${impuestos.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+          <p><strong>Entrada (10%):</strong> ${entrada.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+          <p style="background:#ffe066; padding:0.7em; border-radius:5px; font-size:1.1em;"><strong>Total a aportar inicialmente:</strong> ${totalAportar.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+          ${prestamoInfo}
+        </div>
         <hr>
-        <p><strong>Cuota mensual estimada:</strong> ${cuota.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        <div style="margin-bottom:1em;">
+          <p><strong>IBI anual (0,6%):</strong> ${ibi.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+          <p><strong>Seguros anuales:</strong> ${seguros.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        </div>
+        <hr>
+        <p><strong>Cuota de hipoteca:</strong> ${cuota.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        <p><strong>Gastos de comunidad:</strong> ${comunidad.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        <p><strong>IBI mensual:</strong> ${(ibi/12).toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        <p><strong>Seguro mensual:</strong> ${(seguros/12).toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
+        <hr>
+        <p style="font-size:1.1em; background:#ffe066; padding:0.7em; border-radius:5px;"><strong>Cuota mensual estimada:</strong> ${cuotaTotalMensual.toLocaleString('es-ES', {style:'currency', currency:'EUR'})}</p>
         <p style="font-size:0.9em;color:#888;">Interés: 2,250% | TAE: 2,271% | Plazo: ${nPeriodos} meses (${anios} años)</p>
       `;
       resultDiv.style.display = 'block';
