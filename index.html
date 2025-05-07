@@ -64,8 +64,8 @@
       // Fórmula de cuota fija: C = P * [i(1+i)^n] / [(1+i)^n - 1]
       const cuota = capitalHipoteca * (interesMensual * Math.pow(1 + interesMensual, nPeriodos)) / (Math.pow(1 + interesMensual, nPeriodos) - 1);
       const cuotaTotalMensual = cuota + comunidad + (ibi/12) + (seguros/12);
-      // Cambia el fondo del contenedor si el total a aportar inicialmente supera 52000 o la cuota supera 840
-      if (totalAportar > 52000 || cuota > 840) {
+      // Cambia el fondo del contenedor solo si la cuota mensual total estimada supera 850
+      if (cuotaTotalMensual > 850) {
         resultDiv.style.background = '#ffcccc'; // rojo claro
       } else {
         resultDiv.style.background = '#e9f7ef'; // fondo normal del contenedor
