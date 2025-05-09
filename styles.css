@@ -1,0 +1,55 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 400px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 2em;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+h1 {
+  text-align: center;
+}
+label, input {
+  display: block;
+  width: 100%;
+  margin-bottom: 1em;
+}
+.result {
+  background: #e9f7ef;
+  padding: 1em;
+  border-radius: 6px;
+  margin-top: 1em;
+}
+.result p {
+  margin: 0.5em 0;
+}
+input[type="number"] {
+  padding: 0.5em;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+}
+.highlight {
+  background: #ffe066;
+  padding: 0.7em;
+  border-radius: 5px;
+  font-size: 1.1em;
+}
+.warning {
+  background: #ffcccc !important;
+}
+.extra-info {
+  margin: 1em 0;
+  padding: 0.7em;
+  background: #fff3cd;
+  border-radius: 5px;
+}
